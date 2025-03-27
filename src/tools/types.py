@@ -9,3 +9,4 @@ from numpy import ndarray
 Models = List[MarkovStateModelCollection]
 Centers = ndarray
 Trajectory = List[ndarray]
+DTrajectory = List[ndarray[int]]

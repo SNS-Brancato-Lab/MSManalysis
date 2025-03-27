@@ -15,6 +15,14 @@ def center_info(args):
 
     MSM.center_infos()
 
+def ck_test(args):
+    """
+    Perform Chapman-Kolmogorov test.
+    """
+
+    n_macrostate = args.n
+    MSM.ck_test(n_sets=n_macrostate)
+
 def kinetics(args):
     """
     Compute kinetic analysis between two (or more) macrostates.

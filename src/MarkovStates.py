@@ -1,51 +1,47 @@
 """
-Module for the MSM analysis
+Main module for the MSM analysis
 """
 from typing import Optional, List
 import os
 
 from src.tools.basics import load_file
 from src.tools.info import get_center_infos
-from src.tools.types import Models, Centers, Trajectory
+from src.tools.types import Models, Centers, Trajectory, DTrajectory
 from src.analysis.functions import its_plot, choose_model, ck_testing, score_analysis, pcca_assign_centers, kinetic_analysis,\
-                            trajectory_plot, dtraj_plotting, state_plotting, mfpt
+                            trajectory_plot, dtraj_plotting, mfpt
 from itertools import combinations
 
 class System:
     """
-    This class contains all the main ingredients for the MSM analysis.
-
-    Attributes:
-    -----------
-        models (Models): list of MSMs
-        centers (Centers): microstates used to generate the MSMs
-        dtraj (Trajectory): discretized trajectory used to generate the MSMs
-        traj (Trajectory): trajectory used to generate the MSMs
-        test_model (MarkovStateModelCollection): selected MSM to analyze
-
+    Class containing all the main ingredients for the MSM analysis.
     """
 
     def __init__(self, models: Optional[Models] = None, centers: Optional[Centers] = None,
                  dtraj: Optional[Trajectory] = None, traj: Optional[Trajectory] = None):
         """
-        Costructor for the class system:
+        Initialize the main object for MSM analysis
 
-        Arguments:
+        Parameters
         ----------
-            models (Models or None): list of MSMs
-            centers (Centers or None): microstates used to generate the MSMs
-            dtraj (Trajectory or None): discretized trajectory used to generate the MSMs
-            traj (Trajectory or None): trajectory used to generate the MSMs
+        models : Optional[Models], optional
+            List of MSMs to analyze, by default None
+        centers : Optional[Centers], optional
+            Microctate used to generate the MSMs, by default None
+        dtraj : Optional[Trajectory], optional
+            Discretized trajectory used to compute MSMs, by default None
+        traj : Optional[Trajectory], optional
+            Trajectory used to compute MSMs, by default None
         """
         # Main attributes
         self.models = models
         self.centers = centers
         self.dtraj = dtraj
         self.traj = traj
-        self.test_model = None
-        self.assignements = None
 
-        self._timestep_ns=1e-3  # 1 ps
+        self._test_model = None
+        self._assignements = None
+
+        self._timestep_ns = 1e-3  # 1 ps
 
     # existence propeties       
     @property
@@ -53,31 +49,25 @@ class System:
         """
         True if models exist.
         """    
-        return True if self.models != None else False
+        return True if type(self.models) == Models else False
     @property
     def centers_exist(self):
         """
         True if centers exist.
         """      
-        return True if self.centers is not None else False
+        return True if type(self.centers) == Centers else False
     @property
     def dtraj_exist(self):
         """
         True if discretized trajectory exists.
         """      
-        return True if self.dtraj is not None else False
+        return True if type(self.dtraj) == DTrajectory else False
     @property
     def traj_exist(self):    
         """
         True if trajectory exists.
         """
-        return True if self.traj is not None else False
-    @property
-    def assigments_exist(self):
-        """
-        True if assigments exist.
-        """
-        return True if self.assignements is not None else False
+        return True if type(self.traj) == Trajectory  else False
     
     # number of centers:
     @property
@@ -124,6 +114,9 @@ class System:
     
     # info methods
     def center_infos(self):
+        """
+        Print the number of microstate used for the MSM analsysis.
+        """
         if self.centers_exist:
             return get_center_infos(self.centers)
         else:
@@ -132,31 +125,47 @@ class System:
     # loading methods
     def load_models(self, file_name: str):
         """
-        Load MSMs
+        Load models from a file.
+
+        Parameters
+        ----------
+        file_name : str
+            Models filename
         """
+
         if os.path.exists(file_name):
             self.models = load_file(file_name, kind='Models')
         else:
-            print('Models {} do not exist.'.format(file_name))
+            print('Models file {} do not exist.'.format(file_name))
 
     def load_centers(self, file_name: str):
         """
-        Loading Centers
+        Load centers from a file.
+
+        Parameters
+        ----------
+        file_name : str
+            Center filename
         """
         if os.path.exists(file_name):
             self.centers = load_file(file_name, kind='Centers')
             self.center_infos()
         else:
-            print('Centers {} do not exist.'.format(file_name))
+            print('Centers file {} do not exist.'.format(file_name))
 
     def load_dtraj(self, file_name: str):
         """
-        Loading DTraj
+        Load discretized trajectory from a file.
+
+        Parameters
+        ----------
+        file_name : str
+            Discretized trajectory filename
         """
         if os.path.exists(file_name):
             self.dtraj = load_file(file_name, kind='Discretized Trajectory')
         else:
-            print('Discretized trajectory {} does not exist.'.format(file_name))
+            print('Discretized trajectory file {} does not exist.'.format(file_name))
     
     def load_traj(self, file_name: str):
         """
@@ -194,8 +203,8 @@ class System:
         """
         if self.models_exist:
             selected_model = choose_model(self.models, bestlag)
-            self.test_model = selected_model
-            self.lagtime = selected_model.lagtime
+            self._test_model = selected_model
+            self._lagtime = selected_model.lagtime
 
     # ck_test
     def ck_test(self, n_sets: int = 2):
@@ -206,9 +215,9 @@ class System:
         ----------
             n_sets (int, default=2): number of metastable stets to test
         """
-        if self.test_model != None:
+        if self._test_model is not None:
             print('Performing Chapman-Kolmogorov test with {} metastable sets.'.format(n_sets))
-            ck_testing(self.models, self.test_model, n_sets)
+            ck_testing(self.models, self._test_model, n_sets)
         else:
             print('Select a MSM to test.')
 
@@ -222,8 +231,8 @@ class System:
             method (str, default='E'): method used to compute the score
         """
 
-        if self.dtraj_exist and self.test_model != None:
-            score = score_analysis(self.test_model, self.dtraj, method)
+        if self.dtraj_exist and self._test_model != None:
+            score = score_analysis(self._test_model, self.dtraj, method)
 
             print('Model score: {:.2f}'.format(score))
 
@@ -240,9 +249,9 @@ class System:
             states(List[int]): list of centers for the transition analysis
         """
 
-        if self.test_model != None and self.centers_exist:
-            print('Using lagtime {:.2e} ns'.format(self.lagtime*self.timestep_ns))
-            mfpt(self.test_model, states, self.lagtime*self.timestep_ns)
+        if self._test_model != None and self.centers_exist:
+            print('Using lagtime {:.2e} ns'.format(self._lagtime*self.timestep_ns))
+            mfpt(self._test_model, states, self._lagtime*self.timestep_ns)
         else:
             print('Please select a model and/or provide some centers!')
 
@@ -252,9 +261,9 @@ class System:
         Perform pcca assignements on the test model
         """
 
-        if self.test_model != None:
+        if self._test_model != None:
             print('Doing PCCA with {} metastable states'.format(n_states))
-            self.assignements = pcca_assign_centers(self.test_model, self.centers, n_states)
+            self.assignements = pcca_assign_centers(self._test_model, self.centers, n_states)
 
         else:
             print('Please select a test model!')
@@ -281,7 +290,7 @@ class System:
         # check for state assignement
         if self.assignements == None:
             print('\nNo pcca has been performed! Continuing with centers.')
-            print('Using lagtime {:.2e} ns'.format(self.lagtime*self.timestep_ns))
+            print('Using lagtime {:.2e} ns'.format(self._lagtime*self.timestep_ns))
             assigments = [[i] for i in range(len(self.centers))]
             if states == None:
                 print('No state specified, doing all!')
@@ -290,10 +299,10 @@ class System:
 
             for pair in pairs:
                 print('\n Computing transitions between {} and {}'.format(pair[0], pair[1]))
-                kinetic_analysis(self.test_model, assigments, pair, self.lagtime*self.timestep_ns)
+                kinetic_analysis(self._test_model, assigments, pair, self._lagtime*self.timestep_ns)
         else:
             print('\nDoing some Kinetics!')
-            print('Using lagtime {:.2e} ns'.format(self.lagtime*self.timestep_ns))
+            print('Using lagtime {:.2e} ns'.format(self._lagtime*self.timestep_ns))
             if states == None:
                 print('No state specified, doing all!')
                 states = [i for i in range(len(self.assignements))]
@@ -301,14 +310,14 @@ class System:
 
             for pair in pairs:
                 print('\n Computing transitions between {} and {}'.format(pair[0], pair[1]))
-                kinetic_analysis(self.test_model, self.assignements, pair, self.lagtime*self.timestep_ns)
+                kinetic_analysis(self._test_model, self.assignements, pair, self._lagtime*self.timestep_ns)
 
     def plot_traj(self, bin: int = 100):
         """
         """
 
         if (self.traj_exist and self.dtraj_exist) and self.assignements != None:
-            trajectory_plot(self.traj, self.dtraj, self.test_model, self.assignements)
+            trajectory_plot(self.traj, self.dtraj, self._test_model, self.assignements)
         else:
             print('Select a traj, a dtraj and a model.')
 
@@ -319,13 +328,4 @@ class System:
             dtraj_plotting(self.traj, self.dtraj)
         else:
             print('Select a traj and a dtraj')
-
-    def plot_states(self):
-        """
-        """
-        if self.assigments_exist:
-            state_plotting(self.test_model, self.assignements, self.centers, self.lagtime, self.timestep_ns)
-
-        else:
-            print('Please assign some microstates!')
         

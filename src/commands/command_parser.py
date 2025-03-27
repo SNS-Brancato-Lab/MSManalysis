@@ -30,6 +30,11 @@ command_subparsers = command_parser.add_subparsers(dest="command", required=True
 center_info_parser = command_subparsers.add_parser('center_info')
 center_info_parser.set_defaults(func=center_info)
 
+# ck_test parser
+ck_test_parser = command_subparsers.add_parser('ck_test')
+ck_test_parser.add_argument('n', type=int, default=2, help='Number of macrostates for CK analysis. Default is 2')
+ck_test_parser.set_defaults(func=ck_test)
+
 # kinetics parser
 kinetics_parser = command_subparsers.add_parser('kinetics')
 kinetics_parser.add_argument('A', type=int, help='Starting macrostate id.')
