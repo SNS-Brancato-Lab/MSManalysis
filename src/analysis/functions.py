@@ -49,31 +49,32 @@ def its_plot(models: Models, n_its: int, timestep: int=1):
     plt.show()
 
 # model selections
-def choose_model(models: Models, bestlag: int) -> MarkovStateModelCollection:
+def choose_model(models: Models, lagtime: int) -> MarkovStateModelCollection:
     """
-    Select a MSM based on the best lagtime.
+    Select a MSM from a list of MSMs based on a given lagtime (in step units).
 
-    Arguments:
+    Parameters
     ----------
-        bestlag (int): selected lagtime
+    models : Models
+        List of MSMs
+    lagtime : int
+        The chosen lagtime (in step units)
 
-    Returns:
-    --------
-        selected_model (MarkovStateModelCollection): the selected MSM
+    Returns
+    -------
+    MarkovStateModelCollection
+        The selected MSM
     """
 
     # creating its object
     its_data = implied_timescales(models).lagtimes
 
     # its parameters
-    startlag = int(np.min(its_data))
-    maxlag = int(np.max(its_data))
-    deltalag = int(its_data[1] - its_data[0])
 
-    index = int((bestlag - startlag)/deltalag)
+    index = np.abs(its_data-lagtime).argmin()
     selected_model = models[index]
-    print('Lagtimes go from {} step(s) to {} steps every {} step(s).'.format(startlag, maxlag, deltalag))
-    print('Choosing model number {} with lagtime {}.'.format(index, its_data[index]))
+    print('Lagtime chosen is {}.'.format(lagtime))
+    print('Selecting model number {} with lagtime {}.'.format(index, its_data[index]))
 
     return selected_model
 

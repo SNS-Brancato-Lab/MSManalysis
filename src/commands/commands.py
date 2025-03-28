@@ -89,7 +89,7 @@ def select_model(args):
     """
 
     lagtime = args.lagtime
-    MSM.select_model(bestlag=lagtime)
+    MSM.select_model(lagtime)
 
 def timestep(args):
     """

@@ -49,25 +49,25 @@ class System:
         """
         True if models exist.
         """    
-        return True if type(self.models) == Models else False
+        return True if type(self.models) is Models else False
     @property
     def centers_exist(self):
         """
         True if centers exist.
         """      
-        return True if type(self.centers) == Centers else False
+        return True if type(self.centers) is Centers else False
     @property
     def dtraj_exist(self):
         """
         True if discretized trajectory exists.
         """      
-        return True if type(self.dtraj) == DTrajectory else False
+        return True if type(self.dtraj) is DTrajectory else False
     @property
     def traj_exist(self):    
         """
         True if trajectory exists.
         """
-        return True if type(self.traj) == Trajectory  else False
+        return True if type(self.traj) is Trajectory  else False
     
     # number of centers:
     @property
@@ -134,7 +134,7 @@ class System:
         """
 
         if os.path.exists(file_name):
-            self.models = load_file(file_name, kind='Models')
+            self.models = Models(load_file(file_name, kind='Models'))
         else:
             print('Models file {} do not exist.'.format(file_name))
 
@@ -148,7 +148,7 @@ class System:
             Center filename
         """
         if os.path.exists(file_name):
-            self.centers = load_file(file_name, kind='Centers')
+            self.centers = Centers(load_file(file_name, kind='Centers'))
             self.center_infos()
         else:
             print('Centers file {} do not exist.'.format(file_name))
@@ -163,7 +163,7 @@ class System:
             Discretized trajectory filename
         """
         if os.path.exists(file_name):
-            self.dtraj = load_file(file_name, kind='Discretized Trajectory')
+            self.dtraj = DTrajectory(load_file(file_name, kind='Discretized Trajectory'))
         else:
             print('Discretized trajectory file {} does not exist.'.format(file_name))
     
@@ -172,7 +172,7 @@ class System:
         Loading Traj
         """
         if os.path.exists(file_name):
-            self.traj = load_file(file_name, kind='Trajectory')
+            self.traj = Trajectory(load_file(file_name, kind='Trajectory'))
         else:
             print('Trajectory {} does not exist.'.format(file_name))
 
@@ -193,16 +193,17 @@ class System:
             print('Please load a model file!')
 
     # selection model method
-    def select_model(self, bestlag: int):
+    def select_model(self, lagtime: int):
         """
-        Select the MSM to analyze.
+        Select a MSM based on a chosen lagtime (in step units).
 
-        Attributes:
-        -----------
-            bestlag (int): the selected lagtime 
+        Parameters
+        ----------
+        lagtime : int
+            The choosen lagime (in step units)
         """
         if self.models_exist:
-            selected_model = choose_model(self.models, bestlag)
+            selected_model = choose_model(self.models, lagtime)
             self._test_model = selected_model
             self._lagtime = selected_model.lagtime
 
