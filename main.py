@@ -2,11 +2,9 @@
 Main program execution file.
 """
 
-from src.commands.command_parser import interactive_mode_status, input_file, execute_command
+from src.commands.command_parser import interactive_mode, input_file, execute_command
 from src.commands.inputfile_parser import InputReader
 from src.tools.basics import starting
-
-interactive_mode = interactive_mode_status
 
 def main():
 

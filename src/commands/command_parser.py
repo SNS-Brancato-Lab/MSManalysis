@@ -18,13 +18,17 @@ input_file = main_args.input_file
 # activate reading mode
 if input_file is not None:
     print('Reading commands from {}!'.format(input_file))
-    interactive_mode_status = False
+    interactive_mode = False
 else:
-    interactive_mode_status = True
+    print('Interactive mode is on!')
+    interactive_mode = True
+# set the interactive mode status for the main program
+MSM.interactive_mode = interactive_mode
 
 # Command Parser
 command_parser = argparse.ArgumentParser(prog="", add_help=False)
-command_subparsers = command_parser.add_subparsers(dest="command", required=True) 
+command_subparsers = command_parser.add_subparsers(title='Available commands', description='Use one of the following commands:', 
+                                                   dest="command", required=True) 
 
 # center_info parser
 center_info_parser = command_subparsers.add_parser('center_info')

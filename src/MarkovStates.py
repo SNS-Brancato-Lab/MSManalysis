@@ -3,13 +3,13 @@ Main module for the MSM analysis
 """
 from typing import Optional, List
 import os
+from itertools import combinations
 
 from src.tools.basics import load_file
 from src.tools.info import get_center_infos
 from src.tools.types import Models, Centers, Trajectory, DTrajectory
 from src.analysis.functions import its_plot, choose_model, ck_testing, score_analysis, pcca_assign_centers, kinetic_analysis,\
                             trajectory_plot, dtraj_plotting, mfpt
-from itertools import combinations
 
 class System:
     """
@@ -32,7 +32,7 @@ class System:
         traj : Optional[Trajectory], optional
             Trajectory used to compute MSMs, by default None
         """
-        # Main attributes
+
         self.models = models
         self.centers = centers
         self.dtraj = dtraj
@@ -40,28 +40,56 @@ class System:
 
         self._test_model = None
         self._assignements = None
-
         self._timestep_ns = 1e-3  # 1 ps
 
-    # existence propeties       
+        # interactive mode
+        self._interactive_mode = False
+
+    @property
+    def interactive_mode(self) -> bool:
+        """
+        True if the interactive mode is on.
+
+        Returns
+        -------
+        bool
+            True if the ineractive mode is on
+        """
+        return self._interactive_mode
+    @interactive_mode.setter
+    def interactive_mode(self, status: bool):
+        """
+        Set the status of the interactive mode.
+
+        Parameters
+        ----------
+        status : bool
+            The status of the interactive mode
+        """
+        self._interactive_mode = status
+
+    # check if the main ingredients exist or are correct       
     @property
     def models_exist(self):
         """
         True if models exist.
         """    
         return True if type(self.models) is Models else False
+    
     @property
     def centers_exist(self):
         """
         True if centers exist.
         """      
         return True if type(self.centers) is Centers else False
+    
     @property
     def dtraj_exist(self):
         """
         True if discretized trajectory exists.
         """      
         return True if type(self.dtraj) is DTrajectory else False
+    
     @property
     def traj_exist(self):    
         """
@@ -82,7 +110,7 @@ class System:
         """
 
         if self.centers_exist:
-            return len(self.centers)
+            return self.centers.n_centers()
         else:
             return 0
 
@@ -133,10 +161,9 @@ class System:
             Models filename
         """
 
-        if os.path.exists(file_name):
-            self.models = Models(load_file(file_name, kind='Models'))
-        else:
-            print('Models file {} do not exist.'.format(file_name))
+        print('\nLoading Models')
+        self.models = load_file(file_name, Models, interactive_mode=self.interactive_mode)
+
 
     def load_centers(self, file_name: str):
         """
@@ -147,11 +174,11 @@ class System:
         file_name : str
             Center filename
         """
-        if os.path.exists(file_name):
-            self.centers = Centers(load_file(file_name, kind='Centers'))
+
+        print('\nLoading Centers')
+        self.centers = load_file(file_name, Models, interactive_mode=self.interactive_mode)
+        if self.centers_exist:
             self.center_infos()
-        else:
-            print('Centers file {} do not exist.'.format(file_name))
 
     def load_dtraj(self, file_name: str):
         """
@@ -221,24 +248,6 @@ class System:
             ck_testing(self.models, self._test_model, n_sets)
         else:
             print('Select a MSM to test.')
-
-    # compute score
-    def score(self, method: str = 'E'):
-        """
-        Compute score of the test model.
-
-        Arguments:
-        ----------
-            method (str, default='E'): method used to compute the score
-        """
-
-        if self.dtraj_exist and self._test_model != None:
-            score = score_analysis(self._test_model, self.dtraj, method)
-
-            print('Model score: {:.2f}'.format(score))
-
-        else:
-            print('Missing dtraj or test_model.')
 
     # compute mfpt
     def compute_mfpt(self, states: List[int]):
@@ -313,6 +322,30 @@ class System:
                 print('\n Computing transitions between {} and {}'.format(pair[0], pair[1]))
                 kinetic_analysis(self._test_model, self.assignements, pair, self._lagtime*self.timestep_ns)
 
+
+        
+
+    # method to improve
+
+    # compute score
+    def score(self, method: str = 'E'):
+        """
+        Compute score of the test model.
+
+        Arguments:
+        ----------
+            method (str, default='E'): method used to compute the score
+        """
+
+        if self.dtraj_exist and self._test_model != None:
+            score = score_analysis(self._test_model, self.dtraj, method)
+
+            print('Model score: {:.2f}'.format(score))
+
+        else:
+            print('Missing dtraj or test_model.')
+
+    # plotting PCCA assigments or discretized trajectory
     def plot_traj(self, bin: int = 100):
         """
         """
@@ -329,4 +362,3 @@ class System:
             dtraj_plotting(self.traj, self.dtraj)
         else:
             print('Select a traj and a dtraj')
-        

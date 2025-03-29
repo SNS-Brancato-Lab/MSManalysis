@@ -14,20 +14,18 @@ def get_center_infos(centers: Centers):
     ----------
         centers (Centers): the array of the MSM microstates
     """
-    n_centers = int(centers.shape[0])
-
     # tab creation:
     tab = []
-    for i in range(n_centers):
+    for i in range(centers.n_centers()):
         row = []
         state = 'Microstate {}'.format(i)
-        cvs = ['{:.2f}'.format(cv) for cv in centers[i, :]]
+        cvs = ['{:.3f}'.format(cv) for cv in centers[i, :]]
         row.append(state)
         tab.append(row + cvs)
     
     # printing infos
     print('\n### Microstate Info: ###')
-    print('Number of microstates: {}'.format(n_centers))
-
-    print('Microstate Tab:')
+    print('Number of loaded microstates: {}'.format(centers.n_centers()))
+    print('Microstate dimension: {}'.format(centers.dimension()))
+    print('\nMicrostates:')
     print(tabulate(tab))
