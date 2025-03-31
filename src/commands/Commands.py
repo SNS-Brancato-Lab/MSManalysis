@@ -57,7 +57,7 @@ def mfpt(args):
     state_A = args.A
     state_B = args.B
 
-    MSM.compute_mfpt([state_A, state_B])
+    MSM.compute_mfpt(state_A, state_B)
 
 def pcca_assigments(args):
     """

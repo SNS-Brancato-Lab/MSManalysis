@@ -26,7 +26,10 @@ class Centers(ndarray):
 
     def __new__(cls, centers_array):
         centers = np.asarray(centers_array).view(cls)
-        return centers
+        if centers.ndim >= 2:
+            return centers
+        else:
+            raise ConversionError(message="Data should contain at least 1 row and 1 column!")
     
     def n_centers(self)-> int:
         

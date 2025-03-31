@@ -1,14 +1,16 @@
 """
 Main module for the MSM analysis
 """
+import numpy as np
 from typing import Optional, List
-import os
+
 from itertools import combinations
 
-from src.tools.basics import load_file
-from src.tools.info import get_center_infos
-from src.tools.types import Models, Centers, Trajectory, DTrajectory
-from src.analysis.functions import its_plot, choose_model, ck_testing, score_analysis, pcca_assign_centers, kinetic_analysis,\
+from .tools import load_file
+from .tools import get_center_infos, check_models_centers
+from .tools import Models, Centers, Trajectory, DTrajectory
+from .tools import MissingAttribute
+from src.analysis import its_plot, choose_model, ck_testing, score_analysis, pcca_assign_centers, kinetic_analysis,\
                             trajectory_plot, dtraj_plotting, mfpt
 
 class System:
@@ -45,6 +47,7 @@ class System:
         # interactive mode
         self._interactive_mode = False
 
+
     @property
     def interactive_mode(self) -> bool:
         """
@@ -68,14 +71,7 @@ class System:
         """
         self._interactive_mode = status
 
-    # check if the main ingredients exist or are correct       
-    @property
-    def models_exist(self):
-        """
-        True if models exist.
-        """    
-        return True if type(self.models) is Models else False
-    
+    # check if the main ingredients exist or are correct           
     @property
     def centers_exist(self):
         """
@@ -89,6 +85,13 @@ class System:
         True if discretized trajectory exists.
         """      
         return True if type(self.dtraj) is DTrajectory else False
+
+    @property
+    def models_exist(self):
+        """
+        True if models exist.
+        """    
+        return True if type(self.models) is Models else False
     
     @property
     def traj_exist(self):    
@@ -96,6 +99,7 @@ class System:
         True if trajectory exists.
         """
         return True if type(self.traj) is Trajectory  else False
+    
     
     # number of centers:
     @property
@@ -149,22 +153,61 @@ class System:
             return get_center_infos(self.centers)
         else:
             print('No centers to analyze.')
-            
-    # loading methods
-    def load_models(self, file_name: str):
+
+    # ck_test method
+    def ck_test(self, n_sets: int = 2):
         """
-        Load models from a file.
+        Perform the Chapman-Kolmogorov test.
 
         Parameters
         ----------
-        file_name : str
-            Models filename
+        n_sets : int, optional
+            Number of macrostates to test, by default 2
+
+        Raises
+        ------
+        MissingAttribute
+            Raised if no test MSM is selected
+        """
+        if self._test_model is not None:
+            print('\nPerforming Chapman-Kolmogorov test with {} metastable sets.'.format(n_sets))
+            ck_testing(self.models, self._test_model, n_sets)
+        else:
+            msg = '\nNo test MSM is selected. Please select a MSM!\n'
+            if self.interactive_mode:
+                print('Warning!', msg)
+            else:
+                raise MissingAttribute(message = msg)
+
+    # compute mfpt
+    def compute_mfpt(self, microstate_A: int, microstate_B: int):
+        """
+        Compute mean fist passage time (in ns) and transition events in 1us between two microstate of a MSM.
+
+        Parameters
+        ----------
+        microstate_A : int
+            Starting microstate
+        microstate_B : int
+            Target microstate
+
+        Raises
+        ------
+        MissingAttribute
+            Raised if no test MSM is selected
         """
 
-        print('\nLoading Models')
-        self.models = load_file(file_name, Models, interactive_mode=self.interactive_mode)
-
-
+        if self._test_model != None:
+            print('\nUsing timestep unit {:.2e} ns'.format(self._lagtime*self.timestep_ns))
+            mfpt(self._test_model, microstate_A, microstate_B, self._lagtime*self.timestep_ns)
+        else:
+            msg = '\nNo test MSM is selected. Please select a MSM!\n'
+            if self.interactive_mode:
+                print('Warning!', msg)
+            else:
+                raise MissingAttribute(message = msg)
+    
+    # load methods
     def load_centers(self, file_name: str):
         """
         Load centers from a file.
@@ -180,6 +223,11 @@ class System:
         if self.centers_exist:
             self.center_infos()
 
+            # check compatibility with models
+            if self.models_exist:
+                check_models_centers(self.models, self.centers)
+
+
     def load_dtraj(self, file_name: str):
         """
         Load discretized trajectory from a file.
@@ -191,22 +239,74 @@ class System:
         """
         print('\nLoading Discretized Trajectory!')
         self.dtraj = load_file(file_name, DTrajectory, interactive_mode=self.interactive_mode)
-    
+            
+
+    def load_models(self, file_name: str):
+        """
+        Load models from a file. If centers are not provided, a default set of centers will be generated as the number of states present in the models.
+
+        Parameters
+        ----------
+        file_name : str
+            Models filename
+        """
+        print('\nLoading Models')
+        self.models = load_file(file_name, Models, interactive_mode=self.interactive_mode)
+
+        # reset test model
+        if self._test_model != None:
+            self._test_model = None
+                    
+        # generate default centers or check model compatibility
+        if not self.centers_exist:
+            self.centers = Centers(np.arange(0, self.models[0].n_states).reshape(-1, 1))
+            print(self.centers)
+        else:
+            check_models_centers(self.models, self.centers)
+   
     def load_traj(self, file_name: str):
         """
-        Loading Traj
+        Load trajectory from a file.
+
+        Parameters
+        ----------
+        file_name : str
+            Trajectory filename
         """
         print('\nLoading Trajectory!')
         self.traj = load_file(file_name, Trajectory, interactive_mode=self.interactive_mode)
 
-    # its method
+    # pcca assignements method
+    def pcca_compute_assignements(self, n_states:int = 2):
+        """
+        Perform pcca assignements on the test model
+        """
+
+        if self._test_model is not None:
+            print('Doing PCCA with {} metastable states'.format(n_states))
+            self.assignements = pcca_assign_centers(self._test_model, self.centers, n_states)
+
+        else:
+            msg = '\nNo test MSM is selected. Please select a MSM!\n'
+            if self.interactive_mode:
+                print('Warning!', msg)
+            else:
+                raise MissingAttribute(message = msg)
+
+    # plot its method
     def plot_its(self, n_its: int = 1):
         """
-        Plot implied timescale.
+        Plot the implied timescale test.
 
-        Arguments:
+        Parameters
         ----------
-            n_its (int, default): number of implied timescale to plot
+        n_its : int, optional
+            Number of eigenvalues to plot, by default 1
+
+        Raises
+        ------
+        MissingAttribute
+            Raised if Models are not loaded
         """
 
         if self.models_exist:
@@ -217,53 +317,60 @@ class System:
             if self.interactive_mode:
                 print('Warning!', msg)
             else:
-                raise 
+                raise MissingAttribute(message = msg)
 
     # selection model method
     def select_model(self, lagtime: int):
         """
-        Select a MSM based on a chosen lagtime (in step units).
+        Select a MSM based on a chosen lagtime (in step units). If the chosen lagtime is not present, the MSM with the closest lagtime will be selected.
 
         Parameters
         ----------
         lagtime : int
             The choosen lagime (in step units)
+        Raises
+        ------
+        MissingAttribute
+            Raised if Models are not loaded
         """
         if self.models_exist:
             selected_model = choose_model(self.models, lagtime)
             self._test_model = selected_model
             self._lagtime = selected_model.lagtime
-
-    # ck_test
-    def ck_test(self, n_sets: int = 2):
-        """
-        Perform Chapman-Kolmogorov test.
-
-        Arguments:
-        ----------
-            n_sets (int, default=2): number of metastable stets to test
-        """
-        if self._test_model is not None:
-            print('Performing Chapman-Kolmogorov test with {} metastable sets.'.format(n_sets))
-            ck_testing(self.models, self._test_model, n_sets)
         else:
-            print('Select a MSM to test.')
+            msg = '\nModels are not loaded. Please load a model file!\n'
+            if self.interactive_mode:
+                print('Warning!', msg)
+            else:
+                raise MissingAttribute(message = msg)
 
     # compute mfpt
-    def compute_mfpt(self, states: List[int]):
+    def compute_mfpt(self, microstate_A: int, microstate_B: int):
         """
-        Compute mfpt(s) and rate constants between assigned states from a MSM model.
+        Compute mean fist passage time (in ns) and transition events in 1us between two microstate of a MSM.
 
-        Arguments:
+        Parameters
         ----------
-            states(List[int]): list of centers for the transition analysis
+        microstate_A : int
+            Starting microstate
+        microstate_B : int
+            Target microstate
+
+        Raises
+        ------
+        MissingAttribute
+            Raised if no test MSM is selected
         """
 
-        if self._test_model != None and self.centers_exist:
-            print('Using lagtime {:.2e} ns'.format(self._lagtime*self.timestep_ns))
-            mfpt(self._test_model, states, self._lagtime*self.timestep_ns)
+        if self._test_model != None:
+            print('\nUsing timestep unit {:.2e} ns'.format(self._lagtime*self.timestep_ns))
+            mfpt(self._test_model, microstate_A, microstate_B, self._lagtime*self.timestep_ns)
         else:
-            print('Please select a model and/or provide some centers!')
+            msg = '\nNo test MSM is selected. Please select a MSM!\n'
+            if self.interactive_mode:
+                print('Warning!', msg)
+            else:
+                raise MissingAttribute(message = msg)
 
     # assignements
     def pcca_compute_assignements(self, n_states:int = 2):
@@ -271,7 +378,7 @@ class System:
         Perform pcca assignements on the test model
         """
 
-        if self._test_model != None:
+        if self._test_model is not None:
             print('Doing PCCA with {} metastable states'.format(n_states))
             self.assignements = pcca_assign_centers(self._test_model, self.centers, n_states)
 
@@ -325,7 +432,7 @@ class System:
 
         
 
-    # method to improve
+    #################### WORK IN PROGRESS
 
     # compute score
     def score(self, method: str = 'E'):

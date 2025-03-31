@@ -1,7 +1,7 @@
 """
-Fuctions that plot stuff
+Useful functions for MSM analysis
 """
-from src.tools.types import Models, Trajectory, Centers
+from src.tools import Models, Centers, DTrajectory, Trajectory
 
 from deeptime.plots import plot_implied_timescales, plot_ck_test
 from deeptime.util.validation import implied_timescales
@@ -10,25 +10,24 @@ from deeptime.markov.msm import MarkovStateModelCollection
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.lines import Line2D
-from matplotlib.font_manager import FontProperties
-from mpl_toolkits.mplot3d import axes3d
 
 import numpy as np
 
-from typing import List, Optional
+from typing import List
 
 from tabulate import tabulate
 
 # plotting implied time scale
-def its_plot(models: Models, n_its: int, timestep: int=1):
+def its_plot(models: Models, n_its: int):
     """
-    Plot the implied time scale graph
+    Plot the implied timescale test.
 
-    Arguments:
+    Parameters
     ----------
-        models (Models): list of MSMs to be analyzed
-        n_its (int): number of implied time scale to plot
-        timesteps (int): value of the timestep, default = 1
+    models : Models
+        Collection of MSMs at different lagtime on wich the implied timescale test is performed
+    n_its : int
+        Number of eigenvalue to plot
     """
 
     # creating its object
@@ -43,9 +42,9 @@ def its_plot(models: Models, n_its: int, timestep: int=1):
 
     plot_implied_timescales(its_data, n_its=n_its, ax=ax)
     ax.set_yscale('log')
-    ax.set_title('Implied timescales')
-    ax.set_xlabel('lag time (steps)')
-    ax.set_ylabel('timescale (steps)')
+    ax.set_title('Implied Timescales')
+    ax.set_xlabel('Lagtime (steps)')
+    ax.set_ylabel('Timescale (steps)')
     plt.show()
 
 # model selections
@@ -81,19 +80,22 @@ def choose_model(models: Models, lagtime: int) -> MarkovStateModelCollection:
 # Chapman-Kolmogorov test
 def ck_testing(models: Models, test_model: MarkovStateModelCollection, n_sets:int):
     """
-    Performs Chapman-Kolmogorov test on a MSM
+    Perfom Chapman-Kolmogorov test on a selected MSM.
 
-    Arguments:
+    Parameters
     ----------
-        models (Models): list of MSMs
-        test_model (MarkovStateModelCollection): MSM to test
-        n_sets (int): number of metastable sets
+    models : Models
+        List of MSMs from wich the MSM was selected 
+    test_model : MarkovStateModelCollection
+        The selected MSM
+    n_sets : int
+        Number of macrostate to test
     """
     
     ck_test = test_model.ck_test(models, n_metastable_sets=n_sets)
     grid = plot_ck_test(ck_test, legend=False)
 
-    # test the model stored before to the one chosen
+    # test the model stored before the one chosen
     index = models.index(test_model)
     if index == 0:
         test_model2 = models[index+1]
@@ -104,47 +106,30 @@ def ck_testing(models: Models, test_model: MarkovStateModelCollection, n_sets:in
     plot_ck_test(ck_test, legend=True, grid=grid)
     plt.show()
 
-# score analysis
-def score_analysis(test_model: MarkovStateModelCollection, dtraj: Trajectory, method: str = 'E') -> float:
+
+def mfpt(test_model: MarkovStateModelCollection, state_A: int, state_B: int, ts_units: float):
     """
-    Perform score analysis on a MSM.
+    Compute the mean first passage time (in ns) and the rates of transition events in 1us between two microstates.
 
-    Attributes:
-    -----------
-        test_model (MarkovStateModelCollection): MSM to analyze
-        dtraj (Trajectory): discretized trajectory used for the MSM
-        method (str, default='E'): method used to compute the score
-
-    Returns:
-    --------
-        score (float): score of the model
-    """
-
-    score = test_model.score(dtrajs=dtraj, r="E")
-    
-    return score
-
-def mfpt(test_model: MarkovStateModelCollection, states: List[int], lagtime: float):
-    """
-    Estract mfpt(s) for transtition between two states.
-
-    Arguments:
+    Parameters
     ----------
-        test_model (MarkovStateModelCollection): MSM to analyze
-        states (List[int]): list of macrostates for the transition analysis
-        lagtime (int): lagtime of the selected MSM in ns
+    test_model : MarkovStateModelCollection
+        The selected MSM
+    state_A : int
+        Starting microstate
+    state_B : int
+        Target microstate
+    ts_units : float
+        Conversion unit for MSM lagtime and timestep (usually lagtime*timestep) 
     """
-
-    state_A = states[0]
-    state_B = states[1]
 
     # forward mfpt
     fw_mfpt = test_model.mfpt(state_A, state_B)
-    fc = 1e3/(fw_mfpt*lagtime)
+    fc = 1e3/(fw_mfpt*ts_units)
 
     print(
-        f'MFPT between center {state_A} --> center {state_B} is '
-        f'{fw_mfpt*lagtime:.2f} ns \n'
+        f'MFPT between microstate {state_A} --> microstate {state_B} is '
+        f'{fw_mfpt*ts_units:.2f} ns \n'
 
 
         f' k center {state_A}--> center {state_B} is '
@@ -153,11 +138,11 @@ def mfpt(test_model: MarkovStateModelCollection, states: List[int], lagtime: flo
     
     # backward mfpt
     bc_mfpt = test_model.mfpt(state_B, state_A)
-    bc = 1e3/(bc_mfpt*lagtime)
+    bc = 1e3/(bc_mfpt*ts_units)
 
     print(
-        f'MFPT between center {state_B} --> center {state_A} is '
-        f'{bc_mfpt*lagtime:.2f} ns \n'
+        f'MFPT between microstate {state_B} --> microstate {state_A} is '
+        f'{bc_mfpt*ts_units:.2f} ns \n'
 
 
         f' k center {state_B}--> center {state_A} is '
@@ -258,7 +243,32 @@ def kinetic_analysis(test_model: MarkovStateModelCollection, assignements: List[
             f' k assigned ms {state_B}--> {state_A} is '
             f'{bc:.2e} s^-1'
             )
+
+
+#############WORK IN PROGRESS############
+
+# score analysis: still to improve
+def score_analysis(test_model: MarkovStateModelCollection, dtraj: Trajectory, method: str = 'E') -> float:
+    """
+    Perform score analysis on a MSM.
+
+    Attributes:
+    -----------
+        test_model (MarkovStateModelCollection): MSM to analyze
+        dtraj (Trajectory): discretized trajectory used for the MSM
+        method (str, default='E'): method used to compute the score
+
+    Returns:
+    --------
+        score (float): score of the model
+    """
+
+    score = test_model.score(dtrajs=dtraj, r="E")
     
+    return score
+
+# plotting functions: still to improve
+
 def trajectory_plot(traj: Trajectory, dtraj: Trajectory, test_model: MarkovStateModelCollection, assigments: list):
     """
     """

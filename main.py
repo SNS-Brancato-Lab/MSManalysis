@@ -2,9 +2,9 @@
 Main program execution file.
 """
 
-from src.commands.command_parser import interactive_mode, input_file, execute_command
-from src.commands.inputfile_parser import InputReader
-from src.tools.basics import starting
+from src.commands import interactive_mode, input_file, execute_command
+from src.commands import InputReader
+from src.tools import starting
 
 def main():
 

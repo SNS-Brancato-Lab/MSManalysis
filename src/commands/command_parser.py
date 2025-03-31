@@ -5,7 +5,7 @@ Parser for the main program and available commands
 import argparse
 from typing import Sequence
 
-from src.commands.commands import *
+from .Commands import *
 
 # Main parser
 main_parser = argparse.ArgumentParser(description="MSManalysis by Luca S. and Luca B.", add_help=True)

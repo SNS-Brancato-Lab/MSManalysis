@@ -16,6 +16,7 @@ def get_center_infos(centers: Centers):
     """
     # tab creation:
     tab = []
+    headers = ['Microstates'] + ['CV{}'.format(i+1) for i in range(centers.dimension())]
     for i in range(centers.n_centers()):
         row = []
         state = 'Microstate {}'.format(i)
@@ -25,7 +26,6 @@ def get_center_infos(centers: Centers):
     
     # printing infos
     print('\n### Microstate Info: ###')
-    print('Number of loaded microstates: {}'.format(centers.n_centers()))
-    print('Microstate dimension: {}'.format(centers.dimension()))
-    print('\nMicrostates:')
-    print(tabulate(tab))
+    print('\nNumber of microstates: {}'.format(centers.n_centers()))
+    print('Microstate dimension: {}\n'.format(centers.dimension()))
+    print(tabulate(tab, headers=headers))
