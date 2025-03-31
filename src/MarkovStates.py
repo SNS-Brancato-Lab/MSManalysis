@@ -222,19 +222,20 @@ class System:
 
         print('\nCompute TPT kinetics!')
         print('Using lagtime {:.2e} ns'.format(self._lagtime*self.timestep_ns))
+        
         # check for state assignement
         if self.assignements == None:
             print('\nNo PCCA+ assigments found! Continuing with centers.')
             assigments = [[i] for i in range(len(self.centers))] # fake assigments           
             
             print('\n Computing transitions between microstate {} and {}'.format(state_A, state_B))                        
-            TPTkinetic_analysis(self._test_model, state_A, state_B, assigments, self._lagtime*self.timestep_ns)
         
         else:
             print('Found {} PCCA+ assigments.'.format(len(self.assignements)))        
-            
-            print('\n Computing transitions between microstate {} and {}'.format(state_A, state_B))
-            TPTkinetic_analysis(self._test_model, state_A, state_B, self.assignements, self._lagtime*self.timestep_ns)
+            assigments = self.assignements
+            print('\n Computing transitions between macrostate {} and {}'.format(state_A, state_B))
+        
+        TPTkinetic_analysis(self._test_model, state_A, state_B, assigments, self._lagtime*self.timestep_ns)
 
     # load methods
     def load_centers(self, file_name: str):

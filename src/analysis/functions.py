@@ -233,11 +233,11 @@ def TPTkinetic_analysis(test_model: MarkovStateModelCollection, state_A: int, st
     fc = (1e9/ts_units)*(ftpt.rate)
 
     print(
-        f'\nMFPT between assigned ms {state_A} --> {state_B} is '
+        f'\nMFPT between ms {state_A} --> {state_B} is '
         f'{ftpt.mfpt*ts_units:.2f} ns \n'
 
 
-        f' k assigned ms {state_A}--> {state_B} is '
+        f' k ms {state_A}--> {state_B} is '
         f'{fc:.2e} s^-1'
         )
     
@@ -249,10 +249,10 @@ def TPTkinetic_analysis(test_model: MarkovStateModelCollection, state_A: int, st
 
     bc = (1e9/ts_units)*btpt.rate
     print(
-            f'MFPT between assigned ms {state_B} --> {state_A} is'
+            f'MFPT between ms {state_B} --> {state_A} is'
             f' {btpt.mfpt*ts_units:.2f} ns \n'
 
-            f' k assigned ms {state_B}--> {state_A} is '
+            f' k ms {state_B}--> {state_A} is '
             f'{bc:.2e} s^-1'
             )
 

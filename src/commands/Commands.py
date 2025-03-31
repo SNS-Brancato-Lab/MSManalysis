@@ -31,7 +31,7 @@ def kinetics(args):
     macrostate_A = args.A
     macrostate_B = args.B
 
-    MSM.compute_transitions([macrostate_A, macrostate_B])
+    MSM.compute_TPT_kinetics(macrostate_A, macrostate_B)
 
 def load_centers(args):
     """
