@@ -10,8 +10,8 @@ from .tools import load_file
 from .tools import get_center_infos, check_models_centers
 from .tools import Models, Centers, Trajectory, DTrajectory
 from .tools import MissingAttribute
-from src.analysis import its_plot, choose_model, ck_testing, score_analysis, pcca_assign_centers, kinetic_analysis,\
-                            trajectory_plot, dtraj_plotting, mfpt
+from src.analysis import its_plot, choose_model, ck_testing, score_analysis, pcca_assign_centers, \
+                            TPTkinetic_analysis, trajectory_plot, dtraj_plotting, mfpt
 
 class System:
     """
@@ -207,6 +207,35 @@ class System:
             else:
                 raise MissingAttribute(message = msg)
     
+    def compute_TPT_kinetics(self, state_A: int, state_B: int):
+        """
+        Compute mfpt(s) (in ns) and event rates in 1us following TPT between PCCA+ assigned states from a MSM model.
+        If no PCCA+ has been performed, single microstates will be used.
+
+        Parameters
+        ----------
+        state_A : int
+            Starting macrostate (or microstate)
+        state_B : int
+            Target macrostate (or microstate)
+        """
+
+        print('\nCompute TPT kinetics!')
+        print('Using lagtime {:.2e} ns'.format(self._lagtime*self.timestep_ns))
+        # check for state assignement
+        if self.assignements == None:
+            print('\nNo PCCA+ assigments found! Continuing with centers.')
+            assigments = [[i] for i in range(len(self.centers))] # fake assigments           
+            
+            print('\n Computing transitions between microstate {} and {}'.format(state_A, state_B))                        
+            TPTkinetic_analysis(self._test_model, state_A, state_B, assigments, self._lagtime*self.timestep_ns)
+        
+        else:
+            print('Found {} PCCA+ assigments.'.format(len(self.assignements)))        
+            
+            print('\n Computing transitions between microstate {} and {}'.format(state_A, state_B))
+            TPTkinetic_analysis(self._test_model, state_A, state_B, self.assignements, self._lagtime*self.timestep_ns)
+
     # load methods
     def load_centers(self, file_name: str):
         """
@@ -380,10 +409,14 @@ class System:
 
         if self._test_model is not None:
             print('Doing PCCA with {} metastable states'.format(n_states))
-            self.assignements = pcca_assign_centers(self._test_model, self.centers, n_states)
+            self.assignements = pcca_assign_centers(self._test_model, self.centers, n_states, interactive_mode=self.interactive_mode)
 
         else:
-            print('Please select a test model!')
+            msg = '\nNo test MSM is selected. Please select a MSM!\n'
+            if self.interactive_mode:
+                print('Warning!', msg)
+            else:
+                raise MissingAttribute(message = msg)
     
     # remove assigments
     def clear_pcca(self):
@@ -392,45 +425,13 @@ class System:
         """
         if self.assignements != None:
             self.assignements = None
-        else:
-            print('No assigments found to remove!')
-
-    def compute_transitions(self, states: Optional[List[int]] = None):
-        """
-        Compute mfpt(s) following TPT between pcca assigned states from a MSM model.
-
-        Arguments:
-        ----------
-            states(optional, List[int], default=None): list of pcca macrostates for the transition analysis
-        """
-
-        # check for state assignement
-        if self.assignements == None:
-            print('\nNo pcca has been performed! Continuing with centers.')
-            print('Using lagtime {:.2e} ns'.format(self._lagtime*self.timestep_ns))
-            assigments = [[i] for i in range(len(self.centers))]
-            if states == None:
-                print('No state specified, doing all!')
-                states = assigments
-            pairs = list(combinations(states,2))
-
-            for pair in pairs:
-                print('\n Computing transitions between {} and {}'.format(pair[0], pair[1]))
-                kinetic_analysis(self._test_model, assigments, pair, self._lagtime*self.timestep_ns)
-        else:
-            print('\nDoing some Kinetics!')
-            print('Using lagtime {:.2e} ns'.format(self._lagtime*self.timestep_ns))
-            if states == None:
-                print('No state specified, doing all!')
-                states = [i for i in range(len(self.assignements))]
-            pairs = list(combinations(states,2))
-
-            for pair in pairs:
-                print('\n Computing transitions between {} and {}'.format(pair[0], pair[1]))
-                kinetic_analysis(self._test_model, self.assignements, pair, self._lagtime*self.timestep_ns)
+            print('PCCA+ assigments removed!')
 
 
-        
+
+
+
+
 
     #################### WORK IN PROGRESS
 

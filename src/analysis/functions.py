@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 
 import numpy as np
 
-from typing import List
+from typing import List, Optional
 
 from tabulate import tabulate
 
@@ -150,37 +150,51 @@ def mfpt(test_model: MarkovStateModelCollection, state_A: int, state_B: int, ts_
         )
     
 # pcca assignements
-def pcca_assign_centers(test_model: MarkovStateModelCollection, centers: Centers, n_states: int) -> List[List[int]]:
+def pcca_assign_centers(test_model: MarkovStateModelCollection, centers: Centers, n_states: int, interactive_mode: bool = False) -> List[List[int]]:
     """
-    Perform pcca and assign centers to a macrostates:
+    Perform PCCA+ on a MSM.
 
-    Arguments:
-    -----------
-        test_model (MarkovStateModelCollection): MSM to perform pcca
-        centers (Centers): microstates of the MSM
-        n_states (int): number of macrostate for the pcca
+    Parameters
+    ----------
+    test_model : MarkovStateModelCollection
+        MSM to analyze
+    centers : Centers
+        Microstates of the MSM
+    n_states : int
+        Number of macrostate for the PCCA+
+    interactive_moode : bool
+        True if interactive mode in on, default is False
+
+    Returns
+    -------
+    List[List[int]]
+        List of ordered MSM microstates based on the PCCA+ assigments
+
+    Raises
+    ------
+    ValueError
+        Raised if the number of macrostates is higher than the number of MSM eigenvalues.
+    """
+
+    if n_states > test_model.n_eigenvalues+1:
+        msg = f'Eigenvalues of the selected MSM are {test_model.n_eigenvalues}. Cannot do PCCA with {n_states}!'
+        if interactive_mode:
+            print(msg)
+        else:
+            raise ValueError(msg)
     
-    Returns:
-    --------
-        ordered_states (List[List[int]]): lists containing all the index of the assigned centers
-    """
-
-    if n_states > test_model.n_states:
-        print(f'Centers of the selected MSM are {test_model.n_states}. Cannot do PCCA with {n_states}!')
-        return None
-
     pcca = test_model.pcca(n_states) 
     pcsp = pcca.coarse_grained_stationary_probability
-    #print(pcca.assignments)
+    
     print('\nPCCA analysis.')
     unique_ass = np.unique(pcca.assignments)
     n_unique_ass = len(unique_ass)
     print('PCCA found {} unique assignemets:'.format(n_unique_ass))
     ordered_states = []
-    # reordering could not work for MEPSA clustering!
+    
     for i in range(n_unique_ass):
-    #for i in np.sort(unique_ass):
-        print('Assigned state {} with a stationary probability of {}'.format(i, pcsp[i]))
+    
+        print('Assigned macrostate {} with a stationary probability of {}'.format(i, pcsp[i]))
         ind = np.where(pcca.assignments == i)[0]
         ordered_states.append(ind)
         
@@ -198,7 +212,7 @@ def pcca_assign_centers(test_model: MarkovStateModelCollection, centers: Centers
 
     return ordered_states
 
-def kinetic_analysis(test_model: MarkovStateModelCollection, assignements: List[List[int]], states: List[int], lagtime: float):
+def TPTkinetic_analysis(test_model: MarkovStateModelCollection, state_A: int, state_B: int, assignements: List[List[int]], ts_units: float):
     """
     Estract mfpt(s) following the TPT for transtition between two states.
 
@@ -210,35 +224,33 @@ def kinetic_analysis(test_model: MarkovStateModelCollection, assignements: List[
         lagtime (int): lagtime of the selected MSM in ns 
     """
 
-    state_A = states[0]
-    state_B = states[1]
-
+    # forward kinetics A -> B
     fflux = test_model.reactive_flux(assignements[state_A],
                                     assignements[state_B])
 
-    sets, ftpt = fflux.coarse_grain(assignements)
+    _, ftpt = fflux.coarse_grain(assignements)
 
-    fc = (1e9/lagtime)*(ftpt.rate)
+    fc = (1e9/ts_units)*(ftpt.rate)
 
     print(
         f'\nMFPT between assigned ms {state_A} --> {state_B} is '
-        f'{ftpt.mfpt*lagtime:.2f} ns \n'
+        f'{ftpt.mfpt*ts_units:.2f} ns \n'
 
 
         f' k assigned ms {state_A}--> {state_B} is '
         f'{fc:.2e} s^-1'
         )
     
-
+    # backward kinetics B -> A
     bflux = test_model.reactive_flux(assignements[state_B],
                                     assignements[state_A])
 
     _ , btpt = bflux.coarse_grain(assignements)
 
-    bc = (1e9/lagtime)*btpt.rate
+    bc = (1e9/ts_units)*btpt.rate
     print(
             f'MFPT between assigned ms {state_B} --> {state_A} is'
-            f' {btpt.mfpt*lagtime:.2f} ns \n'
+            f' {btpt.mfpt*ts_units:.2f} ns \n'
 
             f' k assigned ms {state_B}--> {state_A} is '
             f'{bc:.2e} s^-1'
