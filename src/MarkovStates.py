@@ -176,7 +176,7 @@ class System:
         """
 
         print('\nLoading Centers')
-        self.centers = load_file(file_name, Models, interactive_mode=self.interactive_mode)
+        self.centers = load_file(file_name, Centers, interactive_mode=self.interactive_mode)
         if self.centers_exist:
             self.center_infos()
 
@@ -189,19 +189,15 @@ class System:
         file_name : str
             Discretized trajectory filename
         """
-        if os.path.exists(file_name):
-            self.dtraj = DTrajectory(load_file(file_name, kind='Discretized Trajectory'))
-        else:
-            print('Discretized trajectory file {} does not exist.'.format(file_name))
+        print('\nLoading Discretized Trajectory!')
+        self.dtraj = load_file(file_name, DTrajectory, interactive_mode=self.interactive_mode)
     
     def load_traj(self, file_name: str):
         """
         Loading Traj
         """
-        if os.path.exists(file_name):
-            self.traj = Trajectory(load_file(file_name, kind='Trajectory'))
-        else:
-            print('Trajectory {} does not exist.'.format(file_name))
+        print('\nLoading Trajectory!')
+        self.traj = load_file(file_name, Trajectory, interactive_mode=self.interactive_mode)
 
     # its method
     def plot_its(self, n_its: int = 1):
@@ -217,7 +213,11 @@ class System:
             print('\nPlotting implied time scales!')
             its_plot(self.models, n_its)
         else:
-            print('Please load a model file!')
+            msg = '\nModels are not loaded. Please load a model file!\n'
+            if self.interactive_mode:
+                print('Warning!', msg)
+            else:
+                raise 
 
     # selection model method
     def select_model(self, lagtime: int):

@@ -7,12 +7,15 @@ from typing import List
 from deeptime.markov.msm import MarkovStateModelCollection
 from numpy import ndarray
 
+#errors
+from src.tools.errors import ConversionError
+
 class Models(list):
     
     def __init__(self, MSMs: List[MarkovStateModelCollection]):
         
         if not all(isinstance(MSM, MarkovStateModelCollection) for MSM in MSMs):
-            raise TypeError("One or more elements are not MSM.")
+            raise ConversionError(message="One or more elements are not MSM.")
         super().__init__(MSMs)
 
     def n_models(self):

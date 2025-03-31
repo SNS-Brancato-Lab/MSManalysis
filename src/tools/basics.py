@@ -8,6 +8,7 @@ import os
 import sys
 
 from src.tools.types import Models, Centers, Trajectory, DTrajectory
+from src.tools.errors import ConversionError
 
 
 def load_file(file_name: str, type: Union[Models, Centers, Trajectory, DTrajectory], interactive_mode: bool = False) -> Union[Models, Centers, Trajectory, DTrajectory]:
@@ -32,6 +33,9 @@ def load_file(file_name: str, type: Union[Models, Centers, Trajectory, DTrajecto
     ------
     FileNotFoundError
         The file was not found.
+    
+    TypeError
+        The data could not be converted in the required type
     """
     # file not found
     if not os.path.exists(file_name):
@@ -46,12 +50,20 @@ def load_file(file_name: str, type: Union[Models, Centers, Trajectory, DTrajecto
         with open(file_name, 'rb') as file:
             data = pkl.load(file)
 
-        print('{} loaded.\n'.format(file_name))
-
         #conversion
-        converted_data = type(data)
-    
-        return converted_data
+        try:
+            converted_data = type(data)
+            print('{} loaded.\n'.format(file_name))
+            return converted_data
+        
+        except ConversionError as e:
+            if interactive_mode:
+                print('Warning!', ConversionError(file_name))
+                print(e)
+                return None
+            else:
+                print('Warning!', ConversionError(file_name))
+                raise e
 
 def quitting():
     """
