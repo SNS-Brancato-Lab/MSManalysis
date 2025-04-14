@@ -27,6 +27,8 @@ class Centers(ndarray):
     def __new__(cls, centers_array):
         centers = np.asarray(centers_array).view(cls)
         if centers.ndim >= 2:
+            if centers.shape[0] < centers.shape[1]: # avoid row 
+                centers = centers.T
             return centers
         else:
             raise ConversionError(message="Data should contain at least 1 row and 1 column!")

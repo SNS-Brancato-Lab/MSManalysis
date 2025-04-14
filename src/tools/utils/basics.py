@@ -52,7 +52,7 @@ def load_file(file_name: str, type: Union[Models, Centers, Trajectory, DTrajecto
     """
     # file not found
     if not os.path.exists(file_name):
-        msg = '\nWarning! File {} does not exist\n.'.format(file_name)
+        msg = '\nWarning! File {} does not exist.\n'.format(file_name)
         if interactive_mode:
             print(msg)
             return None

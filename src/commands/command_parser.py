@@ -76,7 +76,7 @@ commands['ck_test'] = ck_test_parser
 # kinetics parser
 kinetics_parser = command_subparsers.add_parser('kinetics',
                                                 help='Compute kinetic analysis between two macrostate.',
-                                                description="This command computes mean first passage times (in ns) and event rates in 1us between two macrostate.\
+                                                description="This command computes mean first passage times (in ns) and rates (in s^-1) between two macrostate.\
                                                     If PCCA+ has not be performed, single microstates will be used.\n\
                                                     A MSM must be selected before with 'select_model'",
                                                     add_help=False)

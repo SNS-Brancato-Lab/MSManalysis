@@ -273,12 +273,13 @@ class System:
             self._test_model = None
                     
         # generate default centers or check model compatibility
-        if not self.centers_exist:
-            n_centers = self.models[0].n_states
-            self.centers = Centers(np.arange(0, n_centers).reshape(-1, 1))
-            print('\nCreating {} default microstates.'.format(n_centers))
-        else:
-            check_models_centers(self.models, self.centers)
+        if self.models_exist:
+            if not self.centers_exist:
+                n_centers = self.models[0].n_states
+                self.centers = Centers(np.arange(0, n_centers).reshape(-1, 1))
+                print('\nCreating {} default microstates.'.format(n_centers))
+            else:
+                check_models_centers(self.models, self.centers)
    
 
     # pcca assignements method

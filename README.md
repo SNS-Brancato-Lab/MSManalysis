@@ -108,7 +108,7 @@ This command perform Chapman-Kolmogorov analysis with a chosen set of macrostate
 ```
 
 Compute kinetic analysis between two macrostate.
-This command computes mean first passage times (in ns) and event rates in 1us between two macrostate.If PCCA+ has not be performed, single microstates will be used. A MSM must be selected before with 'select_model'.
+This command computes mean first passage times (in ns) and rates (in s^-1) between two macrostate.If PCCA+ has not be performed, single microstates will be used. A MSM must be selected before with 'select_model'.
 
 **load_centers**
 ```
@@ -176,7 +176,7 @@ This command sets the conversion unit between step units nanosecond. If no times
 
 ## Examples
 
-In this example, a MSM analysis will be shown on a 2 collective variables system with 5 macrostates. Models and microstates can be found in 'MSManalysis/example/'.
+In this example, a MSM analysis will be shown on a 2 collective variables system with 4 macrostates. Models and microstates can be found in 'MSManalysis/example/'.
 This example can be used as a standard workflow for MSManalysis.
 
 1. **Launch MSManalysis in interactive mode**
@@ -187,27 +187,27 @@ python main.py
 
 ![Starting output](example/images/starting.png)
 
-***Launching MSManalysis***
+*Launching MSManalysis*
 
 2. **Load microstates**
 
 ```
-load_centers example/centers_22.pkl
+load_centers example/centers.pkl
 ```
 
 ![Load centers](example/images/load_centers.png)
 
-***Loading microstate for MSM analysis***
+*Loading microstate for MSM analysis*
 
 3. **Load MSMs**
 
 ```
-load_models example/models_22.pkl
+load_models example/models.pkl
 ```
 
 ![Load models](example/images/load_models.png)
 
-***Loading models for MSM analysis***
+*Loading models for MSM analysis*
 
 4. **Markovianity validation pt. 1: implied timescales**
 
@@ -217,34 +217,56 @@ plot_its 4
 
 ![Implied timescales](example/images/plot_its.png)
 
-***Plotting implied timescales for Markovianity validation***
+*Plotting implied timescales for Markovianity validation*
 
-5. **Select a MSM by its lagtime**
+5. **Select a MSM by lagtime**
 
 ```
-select_model 300
+select_model 500
 ```
 
 ![Model selection](example/images/select_model.png)
 
-***Selecting a MSM by its lagtime***
+*Selecting a MSM by lagtime*
 
 6. **Markovianity validation pt. 2: Chapman-Kolmogorov test**
 
 ```
-ck_test 4
+ck_test 5
 ```
 
 ![Chapman-Komogorov test](example/images/ck_test.png)
 
-***Chapman-Kolmogorov test***
+*Chapman-Kolmogorov test*
 
-7. **PCCA+**
+7. **Find macrostates with PCCA+**
 
 ```
-pcca_assigments 5
+pcca_assigments 4
+```
+![PCCA+](example/images/pcca_assigments.png)
+
+*Finding macrostates with PCCA+*
+
+8. **Set the correct timestep**
+
+```
+timestep 1e-4
 ```
 
+![Timestep selection](example/images/timestep.png)
+
+*Selecting the correct timestep*
+
+8. **Compute kinetics between macrostates**
+
+```
+kinetics 0 1
+```
+
+![Kinetics](example/images/kinetics.png)
+
+*Computing kinetics between macrostate 0 and macrostate 1*
 
 ---
 
