@@ -6,6 +6,7 @@ import argparse
 from typing import Sequence
 
 from .Commands import *
+from src.tools.utils.errors import CommandError
 
 # command parser dictionary
 commands = {}
@@ -191,5 +192,13 @@ def execute_command(command_line: Sequence[str]):
             parser.print_help()
         else:
             args.func(args)
+    
+    else:
+        msg = f'Command {command} not found.'
+
+        if interactive_mode:
+            print('Warning!', msg)
+        else:
+            raise CommandError(message=msg)
         
         
