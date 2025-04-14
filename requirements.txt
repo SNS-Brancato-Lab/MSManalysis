@@ -1,0 +1,6 @@
+python_version<3.9
+deeptime
+numpy
+matplotlib
+tabulate
+pickle

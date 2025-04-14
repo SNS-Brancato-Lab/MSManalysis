@@ -1,4 +1,4 @@
-from .basics import *
-from .types import Models, Centers, DTrajectory, Trajectory
-from .info import *
-from .errors import *
+from .utils.basics import *
+from .types.Types import Models, Centers, DTrajectory, Trajectory
+from .utils.info import *
+from .utils.errors import *

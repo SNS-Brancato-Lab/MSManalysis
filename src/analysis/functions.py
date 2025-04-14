@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 
 import numpy as np
 
-from typing import List, Optional
+from typing import List
 
 from tabulate import tabulate
 
@@ -214,14 +214,20 @@ def pcca_assign_centers(test_model: MarkovStateModelCollection, centers: Centers
 
 def TPTkinetic_analysis(test_model: MarkovStateModelCollection, state_A: int, state_B: int, assignements: List[List[int]], ts_units: float):
     """
-    Estract mfpt(s) following the TPT for transtition between two states.
+    Compute mean first passage times (in ns) and rate in (in s^-1) between two states.
 
-    Arguments:
+    Parameters
     ----------
-        test_model (MarkovStateModelCollection): MSM to analyze
-        assignemets (List[List[int]]): list of ordered microstates from pcca
-        states (List[int]): list of macrostates for the transition analysis
-        lagtime (int): lagtime of the selected MSM in ns 
+    test_model : MarkovStateModelCollection
+        MSM to analyze
+    state_A : int
+        Starting state 
+    state_B : int
+        Target state
+    assignements : List[List[int]]
+        Assigments of PCCA+
+    ts_units : float
+        Conversion unit between steps units and time in ns
     """
 
     # forward kinetics A -> B

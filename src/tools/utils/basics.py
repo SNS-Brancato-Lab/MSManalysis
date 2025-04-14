@@ -8,7 +8,7 @@ import os
 import sys
 
 from src.tools.types import Models, Centers, Trajectory, DTrajectory
-from src.tools.errors import ConversionError
+from .errors import ConversionError
 
 def check_models_centers(models: Models, centers: Centers):
     """
@@ -22,7 +22,7 @@ def check_models_centers(models: Models, centers: Centers):
         Microstates of a MSM
     """
     if centers.n_centers() != models[0].n_states:
-        print('Warning! The number of centers is {} but models contain {} states. Be careful and check loaded files!')
+        print('Warning! The number of centers is {} but models contain {} states. Be careful and check loaded files!'.format(centers.n_centers(), models[0].n_states))
 
 def load_file(file_name: str, type: Union[Models, Centers, Trajectory, DTrajectory], interactive_mode: bool = False) -> Union[Models, Centers, Trajectory, DTrajectory]:
     """
@@ -52,7 +52,7 @@ def load_file(file_name: str, type: Union[Models, Centers, Trajectory, DTrajecto
     """
     # file not found
     if not os.path.exists(file_name):
-        msg = '\nWarning! File {} does not exist\n.'.format(file_name)
+        msg = '\nWarning! File {} does not exist.\n'.format(file_name)
         if interactive_mode:
             print(msg)
             return None

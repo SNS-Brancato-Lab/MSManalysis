@@ -2,9 +2,7 @@
 Main module for the MSM analysis
 """
 import numpy as np
-from typing import Optional, List
-
-from itertools import combinations
+from typing import Optional
 
 from .tools import load_file
 from .tools import get_center_infos, check_models_centers
@@ -258,22 +256,9 @@ class System:
                 check_models_centers(self.models, self.centers)
 
 
-    def load_dtraj(self, file_name: str):
-        """
-        Load discretized trajectory from a file.
-
-        Parameters
-        ----------
-        file_name : str
-            Discretized trajectory filename
-        """
-        print('\nLoading Discretized Trajectory!')
-        self.dtraj = load_file(file_name, DTrajectory, interactive_mode=self.interactive_mode)
-            
-
     def load_models(self, file_name: str):
         """
-        Load models from a file. If centers are not provided, a default set of centers will be generated as the number of states present in the models.
+        Load models from a file. If centers are not provided, a default set of centers will be generated as the number of microstates present in the models.
 
         Parameters
         ----------
@@ -288,23 +273,14 @@ class System:
             self._test_model = None
                     
         # generate default centers or check model compatibility
-        if not self.centers_exist:
-            self.centers = Centers(np.arange(0, self.models[0].n_states).reshape(-1, 1))
-            print(self.centers)
-        else:
-            check_models_centers(self.models, self.centers)
+        if self.models_exist:
+            if not self.centers_exist:
+                n_centers = self.models[0].n_states
+                self.centers = Centers(np.arange(0, n_centers).reshape(-1, 1))
+                print('\nCreating {} default microstates.'.format(n_centers))
+            else:
+                check_models_centers(self.models, self.centers)
    
-    def load_traj(self, file_name: str):
-        """
-        Load trajectory from a file.
-
-        Parameters
-        ----------
-        file_name : str
-            Trajectory filename
-        """
-        print('\nLoading Trajectory!')
-        self.traj = load_file(file_name, Trajectory, interactive_mode=self.interactive_mode)
 
     # pcca assignements method
     def pcca_compute_assignements(self, n_states:int = 2):
@@ -435,6 +411,31 @@ class System:
 
 
     #################### WORK IN PROGRESS
+
+    # loading
+    def load_dtraj(self, file_name: str):
+        """
+        Load discretized trajectory from a file.
+
+        Parameters
+        ----------
+        file_name : str
+            Discretized trajectory filename
+        """
+        print('\nLoading Discretized Trajectory!')
+        self.dtraj = load_file(file_name, DTrajectory, interactive_mode=self.interactive_mode)
+
+    def load_traj(self, file_name: str):
+        """
+        Load trajectory from a file.
+
+        Parameters
+        ----------
+        file_name : str
+            Trajectory filename
+        """
+        print('\nLoading Trajectory!')
+        self.traj = load_file(file_name, Trajectory, interactive_mode=self.interactive_mode)
 
     # compute score
     def score(self, method: str = 'E'):

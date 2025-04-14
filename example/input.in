@@ -1,0 +1,9 @@
+load_centers centers_22.pkl
+load_models models_22.pkl
+#center_info
+#plot_its 4
+#select_model 200
+#ck_test 3
+#mfpt 3 0
+#pcca_assigments 4
+#kinetics 1 2
