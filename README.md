@@ -2,8 +2,8 @@
 
 ## Description
 
-This python program allows an easy and interactive analysis of Markov State Models (MSMs) generated with deeptime library.
-Users can provide a list of MSMs at different lagtimes with the microstates used to generate the MSMs, then test the markovianity and compute kinetical data (mean first passage times and event rates).
+This Python program provides an easy-to-use, interactive environment for analyzing Markov State Models (MSMs) generated using the deeptime library.
+Users can supply a list of MSMs created at different lag times, along with the corresponding microstate trajectories used to build them. The program enables users to assess Markovianity and compute key kinetic properties: mean first passage times (MFPTs) and event rates.
 
 ---
 
@@ -45,7 +45,15 @@ In order to use the program, the following modules must be installed:
 
 ## Usage
 
-MSManalysis works provinding commands in the terminal. Commands can be provided inside an input file (batch mode) or inserted directly in the command line (interactive mode).
+MSManalysis operates through terminal commands.
+Commands have the general sintax:
+
+```
+# general commands
+commands arg1 arg2 ...
+```
+
+Commands can be executed in two ways: by providing them interactively in the command line, or by reading them from an input file in batch mode.
 
 a. **Batch mode**
 
@@ -55,6 +63,15 @@ python main.py -i input.in
 ```
 
 'input.in' is a text file containing commands for the analysis of MSMs.
+Words after '#' will be interpreted as comments and ignored.
+
+```
+#example of a command file
+command1 arg1 arg2 #comment1
+command2 arg3 arg4 #comment2
+quit #exit the program
+
+```
 
 b. **Interactive mode**
 
@@ -63,22 +80,8 @@ b. **Interactive mode**
 python main.py
 ```
 
-Interactive mode is automatically activated if no command file is provided.
+Interactive mode is automatically activated if no command input file is provided.
 
-Commands have the general sintax:
-
-```
-# general commands
-commands arg1 arg2 ...
-```
-The input file must be a text file with a list of commands.  Words after '#' will be interpreted as comments and ignored.
-
-'''
-#example of a command file
-command1 arg1 arg2 #comment1
-command2 arg3 arg4 #comment2
-quit #exit the program
-'''
 
 See [Available commands](#available-commands) for specific command details.
 
@@ -176,7 +179,8 @@ This command sets the conversion unit between step units nanosecond. If no times
 
 ## Examples
 
-In this example, a MSM analysis will be shown on a 2 collective variables system with 4 macrostates. Models and microstates can be found in 'MSManalysis/example/'.
+In this example, a MSM analysis will be shown on a 2 collective variables system with 4 macrostates.
+Models and microstates can be found in 'MSManalysis/example/'.
 This example can be used as a standard workflow for MSManalysis.
 
 1. **Launch MSManalysis in interactive mode**
@@ -197,7 +201,8 @@ load_centers example/centers.pkl
 
 ![Load centers](example/images/load_centers.png)
 
-*Loading microstate for MSM analysis*
+*Loading microstate for MSM analysis. Microstates should be provided as a .pkl file containing microstates as an array
+with rows equal to the number of states and columns equal to the state dimensions.*
 
 3. **Load MSMs**
 
@@ -207,7 +212,7 @@ load_models example/models.pkl
 
 ![Load models](example/images/load_models.png)
 
-*Loading models for MSM analysis*
+*Loading models for MSM analysis. MSMs should be provided as a list of MSMs evaluated at different lagtime.*
 
 4. **Markovianity validation pt. 1: implied timescales**
 
@@ -217,7 +222,7 @@ plot_its 4
 
 ![Implied timescales](example/images/plot_its.png)
 
-*Plotting implied timescales for Markovianity validation*
+*Plotting implied timescales for Markovianity validation. This test identifies the smallest lagtime at wich the system could exibit markovian behavior.*
 
 5. **Select a MSM by lagtime**
 
@@ -227,7 +232,7 @@ select_model 500
 
 ![Model selection](example/images/select_model.png)
 
-*Selecting a MSM by lagtime*
+*Selecting a MSM by lagtime. We suggest to use the lagtime identified in the previous step.*
 
 6. **Markovianity validation pt. 2: Chapman-Kolmogorov test**
 
@@ -237,7 +242,7 @@ ck_test 5
 
 ![Chapman-Komogorov test](example/images/ck_test.png)
 
-*Chapman-Kolmogorov test*
+*Chapman-Kolmogorov test. Perform this text to asses the markovian behavior of the selected model.*
 
 7. **Find macrostates with PCCA+**
 
@@ -246,7 +251,7 @@ pcca_assigments 4
 ```
 ![PCCA+](example/images/pcca_assigments.png)
 
-*Finding macrostates with PCCA+*
+*Finding macrostates with PCCA+. With this method is possible to reduce the transition matrix of the selected model and identify the main macrostates.*
 
 8. **Set the correct timestep**
 
@@ -256,7 +261,7 @@ timestep 1e-4
 
 ![Timestep selection](example/images/timestep.png)
 
-*Selecting the correct timestep*
+*Selecting the correct timestep. It is the time interval used to collect data from the trajectory.*
 
 8. **Compute kinetics between macrostates**
 
@@ -266,7 +271,7 @@ kinetics 0 1
 
 ![Kinetics](example/images/kinetics.png)
 
-*Computing kinetics between macrostate 0 and macrostate 1*
+*Computing kinetics between macrostate 0 and macrostate 1. This analysis uses transition path theory to extract mean first passage times and rates from a MSM.*
 
 ---
 
