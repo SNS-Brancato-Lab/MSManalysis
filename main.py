@@ -1,12 +1,13 @@
 """
 Main program execution file.
 """
+# starting MSManalysis
+from src.tools import starting
 starting()
 
 from src.commands import interactive_mode, input_file
 from src.commands.command_parser import execute_command
 from src.commands import InputReader
-from src.tools import starting
 
 def main():
 

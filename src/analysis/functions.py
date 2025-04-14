@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 
 import numpy as np
 
-from typing import List, Optional
+from typing import List
 
 from tabulate import tabulate
 

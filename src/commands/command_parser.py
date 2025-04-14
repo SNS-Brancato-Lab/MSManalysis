@@ -133,7 +133,7 @@ commands['pcca_assigments'] = pcca_assigments_parser
 # plot_its
 plot_its_parser = command_subparsers.add_parser('plot_its',
                                                 help='Perform and plot the implied timescale analysis of a given number of eigenvalue.',
-                                                description='This program perform and plot the implied timescale analysis.\n\
+                                                description='This command perform and plot the implied timescale analysis.\n\
                                                     If no number of eigenvalue is provided, only the first eigenvalue will be shown.',
                                                 add_help=False)
 plot_its_parser.add_argument('n_its', metavar='N_eigenvalues', type=int, default=1, nargs='?', help='Number of eigenvalues to plot. Default is 1.')
@@ -144,6 +144,7 @@ commands['plot_its'] = plot_its_parser
 # quit parser
 quit_parser = command_subparsers.add_parser('quit',
                                             help='Terminate the program.',
+                                            description='This command terminate the execution of the program.',
                                             add_help=False)
 quit_parser.add_argument("-h", "--help", action='store_true', help="Show help message.")
 quit_parser.set_defaults(func=quit)

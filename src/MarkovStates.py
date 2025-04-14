@@ -256,19 +256,6 @@ class System:
                 check_models_centers(self.models, self.centers)
 
 
-    def load_dtraj(self, file_name: str):
-        """
-        Load discretized trajectory from a file.
-
-        Parameters
-        ----------
-        file_name : str
-            Discretized trajectory filename
-        """
-        print('\nLoading Discretized Trajectory!')
-        self.dtraj = load_file(file_name, DTrajectory, interactive_mode=self.interactive_mode)
-            
-
     def load_models(self, file_name: str):
         """
         Load models from a file. If centers are not provided, a default set of centers will be generated as the number of microstates present in the models.
@@ -293,17 +280,6 @@ class System:
         else:
             check_models_centers(self.models, self.centers)
    
-    def load_traj(self, file_name: str):
-        """
-        Load trajectory from a file.
-
-        Parameters
-        ----------
-        file_name : str
-            Trajectory filename
-        """
-        print('\nLoading Trajectory!')
-        self.traj = load_file(file_name, Trajectory, interactive_mode=self.interactive_mode)
 
     # pcca assignements method
     def pcca_compute_assignements(self, n_states:int = 2):
@@ -434,6 +410,31 @@ class System:
 
 
     #################### WORK IN PROGRESS
+
+    # loading
+    def load_dtraj(self, file_name: str):
+        """
+        Load discretized trajectory from a file.
+
+        Parameters
+        ----------
+        file_name : str
+            Discretized trajectory filename
+        """
+        print('\nLoading Discretized Trajectory!')
+        self.dtraj = load_file(file_name, DTrajectory, interactive_mode=self.interactive_mode)
+
+    def load_traj(self, file_name: str):
+        """
+        Load trajectory from a file.
+
+        Parameters
+        ----------
+        file_name : str
+            Trajectory filename
+        """
+        print('\nLoading Trajectory!')
+        self.traj = load_file(file_name, Trajectory, interactive_mode=self.interactive_mode)
 
     # compute score
     def score(self, method: str = 'E'):
