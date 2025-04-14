@@ -8,7 +8,7 @@ import os
 import sys
 
 from src.tools.types import Models, Centers, Trajectory, DTrajectory
-from src.tools.errors import ConversionError
+from .errors import ConversionError
 
 def check_models_centers(models: Models, centers: Centers):
     """

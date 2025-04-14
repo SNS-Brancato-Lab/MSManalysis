@@ -8,7 +8,7 @@ from deeptime.markov.msm import MarkovStateModelCollection
 from numpy import ndarray
 
 #errors
-from src.tools.errors import ConversionError
+from src.tools.utils.errors import ConversionError
 
 class Models(list):
     

@@ -4,7 +4,7 @@ Functions that get and print informations
 from tabulate import tabulate
 import numpy as np
 
-from src.tools.types import Centers, Trajectory, Models
+from src.tools.types import Centers
 
 def get_center_infos(centers: Centers):
     """

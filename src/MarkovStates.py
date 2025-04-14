@@ -2,9 +2,7 @@
 Main module for the MSM analysis
 """
 import numpy as np
-from typing import Optional, List
-
-from itertools import combinations
+from typing import Optional
 
 from .tools import load_file
 from .tools import get_center_infos, check_models_centers
@@ -273,7 +271,7 @@ class System:
 
     def load_models(self, file_name: str):
         """
-        Load models from a file. If centers are not provided, a default set of centers will be generated as the number of states present in the models.
+        Load models from a file. If centers are not provided, a default set of centers will be generated as the number of microstates present in the models.
 
         Parameters
         ----------
@@ -289,8 +287,9 @@ class System:
                     
         # generate default centers or check model compatibility
         if not self.centers_exist:
-            self.centers = Centers(np.arange(0, self.models[0].n_states).reshape(-1, 1))
-            print(self.centers)
+            n_centers = self.models[0].n_states
+            self.centers = Centers(np.arange(0, n_centers).reshape(-1, 1))
+            print('\nCreating {} default microstates.'.format(n_centers))
         else:
             check_models_centers(self.models, self.centers)
    

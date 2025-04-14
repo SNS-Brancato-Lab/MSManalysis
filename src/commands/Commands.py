@@ -25,7 +25,7 @@ def ck_test(args):
 
 def kinetics(args):
     """
-    Compute kinetic analysis between two (or more) macrostates.
+    Compute kinetic analysis between two macrostates.
     """
 
     macrostate_A = args.A
@@ -51,7 +51,7 @@ def load_models(args):
 
 def mfpt(args):
     """
-    Compute the mean first passage time between two centers.
+    Compute the mean first passage time between two microstates.
     """
 
     state_A = args.A
