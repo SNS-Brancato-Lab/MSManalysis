@@ -5,6 +5,8 @@
 This Python program provides an easy-to-use, interactive environment for analyzing Markov State Models (MSMs) generated using the deeptime library.
 Users can supply a list of MSMs created at different lag times, along with the corresponding microstate trajectories used to build them. The program enables users to assess Markovianity and compute key kinetic properties: mean first passage times (MFPTs) and event rates.
 
+The program can be also used as a python module to generate MSMs from a series of short trajectories. Generated MSMs can be then analyzed with this program.
+
 ---
 
 ## Table of Contents
