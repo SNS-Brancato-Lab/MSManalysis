@@ -12,7 +12,8 @@ Users can supply a list of MSMs created at different lag times, along with the c
 - [Installation](#installation)
 - [Usage](#usage)
 - [Available commands](#available-commands)
-- [Examples](#examples)
+- [Example: generate MSMs](#example-generate-msms)
+- [Example: analysis of MSMs](#example-analysis-of-msms)
 - [License](#license)
 - [Contact](#contact)
 
@@ -177,7 +178,52 @@ This command selects a MSM by providing a lagtime (in step units). If the provid
 Set the conversion unit between step units and ns.
 This command sets the conversion unit between step units nanosecond. If no timestep is provided, it will print the active timestep unit conversion value.
 
-## Examples
+## Example: generate MSMs
+
+This example shows how to use the python modules of MSManalysis to generate and save MSMs, toghether with trajectory, microstates and discretized trajectory. Since trajectory generation and clustering could be computationally demanding in term of memory and resources, it is highly recommended to perform these tasks on a HPC cluster.
+
+1. **Import required modules and generate MSM object**
+
+```python
+import numpy as np
+from src import System
+
+MSM = System()
+```
+
+2. **Generate and save trajectory**
+
+```python
+# generate and save trajectory
+dir_traj = 'path/to/dir' #here insert the path to traj directory
+# generate and save trajectory
+MSM.generate_traj(dir=dir_traj)
+```
+
+Trajectory is generated from a series of small trajectories collected in a directory as text files. The directory must contain only trajectory text files. Trajectory is saved as 'traj.pkl' file
+ 
+3. **Generate microstates, discretized trajectories and MSMs**
+
+```python
+# generates MSM at different clustering and lagtimes
+centers_array = np.arange(6, 20) #here insert the range of number of microstates to test
+lagtimes = np.arange(100, 1000, 10) #here insert the range of lagtimes to test
+
+for n_centers in centers_array:
+
+    # generate and save microstate and discretized trajectory
+    MSM.generate_centers_dtraj(n_centers=n_centers)
+
+    # generate and save MSMs
+    MSM.generate_model(lagtimes=lagtimes)
+```
+
+Generate and save different number of microstates and discretized trajectories and correspondent MSMs at various lagtimes. Microstates, discretized trajectoryes and MSMs are saved as 'centers_n.pkl', 'dtraj_n.pkl' and 'models_n.pkl' files, where 'n' is the number of microstates used in the generation process. See the next example on how to analyze MSMs.
+
+
+The full script is available in example/MSMgenerator_example.py
+
+## Example: analysis of MSMs
 
 In this example, a MSM analysis will be shown on a 2 collective variables system with 4 macrostates.
 Models and microstates can be found in 'MSManalysis/example/'.
@@ -201,7 +247,7 @@ python main.py
                                                   |___/ 
             
           
-        by Luca S. and Luca B.
+        by Luca Benedetti and Luca Sagresti
           
 
 Interactive mode is on!
@@ -210,10 +256,6 @@ Type 'quit' to exit.
 > 
 
 ```
-
-![Starting output](example/images/starting.png)
-
-*Launching MSManalysis*
 
 2. **Load microstates**
 

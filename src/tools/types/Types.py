@@ -20,7 +20,11 @@ class Models(list):
 
     def n_models(self):
 
-        return len(self) 
+        return len(self)
+
+    def n_states(self):
+
+        return self[0].n_states 
 
 class Centers(ndarray):
 

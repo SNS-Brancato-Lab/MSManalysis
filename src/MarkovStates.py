@@ -2,14 +2,17 @@
 Main module for the MSM analysis
 """
 import numpy as np
-from typing import Optional
+from typing import Optional, Union, List
 
-from .tools import load_file
+from .tools import load_file, save_file_pkl
 from .tools import get_center_infos, check_models_centers
 from .tools import Models, Centers, Trajectory, DTrajectory
 from .tools import MissingAttribute
+
 from src.analysis import its_plot, choose_model, ck_testing, score_analysis, pcca_assign_centers, \
                             TPTkinetic_analysis, trajectory_plot, dtraj_plotting, mfpt
+
+from src.generator import generate_trajectory, generate_centers_dtraj, generate_model
 
 class System:
     """
@@ -57,6 +60,7 @@ class System:
             True if the ineractive mode is on
         """
         return self._interactive_mode
+    
     @interactive_mode.setter
     def interactive_mode(self, status: bool):
         """
@@ -234,6 +238,70 @@ class System:
             print('\n Computing transitions between macrostate {} and {}'.format(state_A, state_B))
         
         TPTkinetic_analysis(self._test_model, state_A, state_B, assigments, self._lagtime*self.timestep_ns)
+
+    # generate method
+
+    def generate_centers_dtraj(self, n_centers: int, save_files: bool = True):
+        """
+        Generate (and save) microstates and discretized trajectory with KMeans cluster algorithm from a trajectory.
+    
+
+        Parameters
+        ----------
+        n_centers : int
+            Number of microstates
+        save_files : bool, optional
+            If true, of microstates and discretized trajectory will be saved in .pkl format, by default True
+
+        Raises
+        ------
+        MissingAttribute
+            Raised if a trajectory to clusterized is not present.
+        """
+
+        if self.traj_exist:
+            self.centers, self.dtraj = generate_centers_dtraj(self.traj, n_centers=n_centers)
+            if save_files:
+                save_file_pkl(self.centers, f'centers_{self.centers.n_centers()}.pkl')
+                save_file_pkl(self.dtraj, f'dtraj_{self.centers.n_centers()}.pkl')
+        
+        else:
+            msg = '\nNo trajectory found. Please load or generate a trajectory!\n'
+            raise MissingAttribute(message = msg)
+        
+    def generate_model(self, lagtimes: Union[np.ndarray[int], List[int]], save_file: bool = True):
+        """
+        Generate (and save) MSMs from a discretized trajectory at different lagtimes.
+
+        Parameters
+        ----------
+        lagtimes : Union[np.ndarray[int], List[int]]
+            Array or list of lagtimes
+        save_file : bool, optional
+            If true, MSMs will be saved in .pkl format , by default True
+
+        Raises
+        ------
+        MissingAttribute
+            _description_
+        """
+        if self.dtraj_exist:
+            self.models = generate_model(self.dtraj, lagtimes = lagtimes)
+            if save_file:
+                save_file_pkl(self.models, f'models_{self.models.n_states()}.pkl')
+
+        else:
+            msg = '\nNo discretized trajectory found. Please load or generate a trajectory!\n'
+            raise MissingAttribute(message = msg)
+
+
+
+    def generate_traj(self, dir: str, save_file= True):
+
+        self.traj = generate_trajectory(dir = dir)
+
+        if save_file:
+            save_file_pkl(self.traj, filename='traj.pkl')
 
     # load methods
     def load_centers(self, file_name: str):
