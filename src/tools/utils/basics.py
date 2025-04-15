@@ -21,7 +21,7 @@ def check_models_centers(models: Models, centers: Centers):
     centers : Centers
         Microstates of a MSM
     """
-    if centers.n_centers() != models[0].n_states:
+    if centers.n_centers() != models.n_states():
         print('Warning! The number of centers is {} but models contain {} states. Be careful and check loaded files!'.format(centers.n_centers(), models[0].n_states))
 
 def load_file(file_name: str, type: Union[Models, Centers, Trajectory, DTrajectory], interactive_mode: bool = False) -> Union[Models, Centers, Trajectory, DTrajectory]:
@@ -100,6 +100,22 @@ def starting():
                                                   |___/ 
             
           
-        by Luca S. and Luca B.
+        by Luca Benedetti and Luca Sagresti
           """)
+    
+
+def save_file_pkl(obj, filename:str):
+    """
+    Save an object in .pkl format
+
+    Parameters
+    ----------
+    obj : Any
+        Object to save
+    filename : str
+        Name of the file where to save the object
+    """
+    
+    with open(filename, 'wb') as f:
+        pkl.dump(obj, f)
     
